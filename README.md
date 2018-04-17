@@ -1,2 +1,2 @@
-# azurebootcamp2018-event-grid
-Azure Bootcamp 2018 - Event Grid Presentation and Demos
+# Azure Bootcamp 2018 - Azure Event Grid 
+Presentation and Demos
