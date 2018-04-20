@@ -1,0 +1,48 @@
+﻿<policies>
+    <inbound>
+        <base />
+        <!-- Check event type -->
+        <set-variable value="@(context.Request.Headers["Aeg-Event-Type"].Contains("SubscriptionValidation"))" name="isEventGridSubscriptionValidation" />
+        <set-variable value="@(context.Request.Headers["Aeg-Event-Type"].Contains("Notification"))" name="isEventGridNotification" />
+        <choose>
+            <when condition="@(context.Variables.GetValueOrDefault<bool>("isEventGridSubscriptionValidation"))">
+                <return-response id="apim-generated-policy">
+                    <set-status code="200" reason="OK" />
+                    <set-body>@{
+                          var events = context.Request.Body.As<string>(); 
+                          JArray a = JArray.Parse(events);
+                          var eventGridData = a.First["data"];
+                          var validationCode = eventGridData["validationCode"];
+                          var jOutput =
+                             new JObject(
+                                new JProperty("validationResponse", validationCode)
+                             );
+                        return jOutput.ToString();
+                    }</set-body>
+                </return-response>
+            </when>
+            <when condition="@(context.Variables.GetValueOrDefault<bool>("isEventGridNotification"))">
+                <send-one-way-request mode="new">
+                    <set-url>https://hooks.slack.com/services/{{slack-key}}</set-url>
+                    <set-method id="apim-generated-policy">POST</set-method>
+                    <set-body>@{  
+                        var events = context.Request.Body.As<string>(); 
+                        JArray a = JArray.Parse(events);
+                        var eventGridData = a.First["data"];
+                        var score = eventGridData["Score"];
+                        return new JObject(   
+                            new JProperty("icon_emoji", ":musical_note:"),  
+                            new JProperty("text", String.Format("Feedback Score: {0}",
+                                score))
+                            ).ToString();   
+                    }</set-body>
+                </send-one-way-request>
+            </when>
+        </choose>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
