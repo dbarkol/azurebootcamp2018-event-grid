@@ -1,4 +1,4 @@
-﻿<policies>
+<policies>
     <inbound>
         <base />
         <!-- Check event type -->
@@ -6,7 +6,7 @@
         <set-variable value="@(context.Request.Headers["Aeg-Event-Type"].Contains("Notification"))" name="isEventGridNotification" />
         <choose>
             <when condition="@(context.Variables.GetValueOrDefault<bool>("isEventGridSubscriptionValidation"))">
-                <return-response id="apim-generated-policy">
+                <return-response>
                     <set-status code="200" reason="OK" />
                     <set-body>@{
                           var events = context.Request.Body.As<string>(); 
@@ -24,19 +24,22 @@
             <when condition="@(context.Variables.GetValueOrDefault<bool>("isEventGridNotification"))">
                 <send-one-way-request mode="new">
                     <set-url>https://hooks.slack.com/services/{{slack-key}}</set-url>
-                    <set-method id="apim-generated-policy">POST</set-method>
-                    <set-body>@{  
-                        var events = context.Request.Body.As<string>(); 
-                        JArray a = JArray.Parse(events);
-                        var eventGridData = a.First["data"];
-                        var score = eventGridData["Score"];
-                        return new JObject(   
-                            new JProperty("icon_emoji", ":musical_note:"),  
-                            new JProperty("text", String.Format("Feedback Score: {0}",
-                                score))
-                            ).ToString();   
+                    <set-method>POST</set-method>
+                    <set-body>@{
+					  var events = context.Request.Body.As<string>(); 
+								JArray a = JArray.Parse(events);
+								var eventGridData = a.First["data"];
+								var score = eventGridData["Score"];
+								return new JObject(   
+									new JProperty("icon_emoji", ":musical_note:"),  
+									new JProperty("text", String.Format("Feedback Score: {0}",
+										score))
+									).ToString();   
                     }</set-body>
                 </send-one-way-request>
+                <return-response>
+                    <set-status code="200" reason="OK" />
+                </return-response>
             </when>
         </choose>
     </inbound>
@@ -46,3 +49,7 @@
     <outbound>
         <base />
     </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
