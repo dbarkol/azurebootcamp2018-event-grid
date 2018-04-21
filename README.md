@@ -3,4 +3,4 @@
 ![alt text](https://lh3.googleusercontent.com/gOnwoH1f8vW2SkO_RCnqTUg9R3FO46EPJShgT409MRrnq_iSxup87H_xtVQgfLy6wAWVAKzWPNj5VyHiFQ "Global Azure Bootcamp 2018")
 
 
-Presentation and Demos
+This repository contains the slides and demos from the Azure Event Grid presentation at the 2018 Global Azure Bootcamp in Southern California. 
